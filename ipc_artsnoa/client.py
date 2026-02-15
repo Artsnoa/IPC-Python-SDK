@@ -2,12 +2,14 @@ from typing import Any
 import requests
 
 from . import modules
+from .exceptions import IPCConnectionError, IPCTimeoutError, IPCAPIError
 
 
 class IPCClient:
     """Client for IPC API"""
 
     DEFAULT_BASE_URL = "https://ipc.artsnoa.com"
+    BACKUP_BASE_URL = "https://ipc.makedns.net"
     DEFAULT_TIMEOUT = 10.0
 
     def __init__(
@@ -42,7 +44,10 @@ class IPCClient:
             IPCConnectionError: When connection fails
             IPCTimeoutError: When request times out
         """
-        return modules.get_ip(self._session, self.base_url, self.timeout)
+        try:
+            return modules.get_ip(self._session, self.base_url, self.timeout)
+        except (IPCConnectionError, IPCTimeoutError, IPCAPIError):
+            return modules.get_ip(self._session, self.BACKUP_BASE_URL, self.timeout)
 
     def get_ip_details(self) -> dict[str, Any]:
         """
@@ -56,7 +61,10 @@ class IPCClient:
             IPCConnectionError: When connection fails
             IPCTimeoutError: When request times out
         """
-        return modules.get_ip_details(self._session, self.base_url, self.timeout)
+        try:
+            return modules.get_ip_details(self._session, self.base_url, self.timeout)
+        except (IPCConnectionError, IPCTimeoutError, IPCAPIError):
+            return modules.get_ip_details(self._session, self.BACKUP_BASE_URL, self.timeout)
 
     def get_sdk_versions(self) -> dict[str, Any]:
         """
@@ -70,7 +78,10 @@ class IPCClient:
             IPCConnectionError: When connection fails
             IPCTimeoutError: When request times out
         """
-        return modules.get_sdk_versions(self._session, self.base_url, self.timeout)
+        try:
+            return modules.get_sdk_versions(self._session, self.base_url, self.timeout)
+        except (IPCConnectionError, IPCTimeoutError, IPCAPIError):
+            return modules.get_sdk_versions(self._session, self.BACKUP_BASE_URL, self.timeout)
 
     def __enter__(self):
         return self
