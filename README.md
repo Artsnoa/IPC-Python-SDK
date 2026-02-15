@@ -1,6 +1,6 @@
 # IPC Artsnoa Python SDK
 
-Official Python SDK for [ipc.artsnoa.com](https://ipc.artsnoa.com) API - IP geolocation and information service.
+Official Python SDK for [ipc.artsnoa.com](https://ipc.artsnoa.com) API - Get your external IP address and location information.
 
 ## Features
 
@@ -10,7 +10,6 @@ Official Python SDK for [ipc.artsnoa.com](https://ipc.artsnoa.com) API - IP geol
 - Automatic retry logic with exponential backoff
 - Environment variable configuration support
 - Zero external dependencies (uses standard library only)
-- Full test coverage
 
 ## Installation
 
@@ -29,12 +28,16 @@ uv add ipc-artsnoa
 ```python
 from ipc_artsnoa import IPCClient
 
-# Initialize client with API key
+# Initialize client (API key is optional)
 client = IPCClient(api_key='YOUR_API_KEY')
 
-# Get IP information
+# Get your IP information
 data = client.get_ip()
 print(f'Your IP: {data["ip"]}, Country: {data["country"]}')
+
+# Lookup specific URL
+data = client.get_ip(lookup='google.com')
+print(f'Google IP: {data["ip"]}')
 ```
 
 ## Usage Examples
@@ -44,34 +47,34 @@ print(f'Your IP: {data["ip"]}, Country: {data["country"]}')
 ```python
 from ipc_artsnoa import IPCClient
 
-# Create client
+# Create client (API key is optional)
 client = IPCClient(api_key='YOUR_API_KEY')
 
-# Get your own IP info
+# Get your IP info
 data = client.get_ip()
 print(f"IP: {data['ip']}")
 print(f"Country: {data['country']}")
-print(f"City: {data['city']}")
+
+# Without API key
+client = IPCClient()
+data = client.get_ip()
+print(f"Your IP: {data['ip']}")
 ```
 
-### Query Specific IP
+### URL Lookup
 
 ```python
-# Get info for a specific IP
-data = client.get_ip(ip='8.8.8.8')
-print(f"Google DNS is in {data['country']}")
-```
+from ipc_artsnoa import IPCClient
 
-### Detailed Response Object
+# Create client
+client = IPCClient(api_key='YOUR_API_KEY')
 
-```python
-# Get detailed response object
-response = client.get_ip_detailed()
-print(f"IP: {response.ip}")
-print(f"Country: {response.country}")
-print(f"City: {response.city}")
-print(f"ISP: {response.isp}")
-print(f"Coordinates: ({response.latitude}, {response.longitude})")
+# Lookup IP for specific URL
+data = client.get_ip(lookup='google.com')
+print(f"Google IP: {data['ip']}")
+
+data = client.get_ip(lookup='github.com')
+print(f"GitHub IP: {data['ip']}")
 ```
 
 ### Environment Variables
@@ -100,33 +103,8 @@ client = IPCClient(
     max_retries=5,
     user_agent='MyApp/1.0'
 )
-```
 
-### Location Information
-
-```python
-# Get location details
-location = client.get_location()
-print(f"Location: {location['city']}, {location['country']}")
-```
-
-### ISP Information
-
-```python
-# Get ISP details
-isp = client.get_isp()
-print(f"ISP: {isp['isp']}")
-```
-
-### Batch Lookup
-
-```python
-# Look up multiple IPs at once
-ips = ['8.8.8.8', '1.1.1.1', '208.67.222.222']
-results = client.batch_lookup(ips)
-
-for ip, data in results.items():
-    print(f"{ip}: {data['country']}")
+data = client.get_ip()
 ```
 
 ## Error Handling
@@ -138,7 +116,6 @@ from ipc_artsnoa import (
     IPCClient,
     AuthenticationError,
     RateLimitError,
-    ValidationError,
     APIError,
     NetworkError,
     TimeoutError
@@ -148,12 +125,11 @@ client = IPCClient(api_key='YOUR_API_KEY')
 
 try:
     data = client.get_ip()
+    print(f"Your IP: {data['ip']}")
 except AuthenticationError as e:
     print(f"Authentication failed: {e}")
 except RateLimitError as e:
     print(f"Rate limit exceeded: {e}")
-except ValidationError as e:
-    print(f"Invalid request: {e}")
 except APIError as e:
     print(f"API error: {e}")
 except NetworkError as e:
@@ -180,7 +156,7 @@ The SDK supports the following environment variables:
 
 ```python
 IPCClient(
-    api_key: str,
+    api_key: Optional[str] = None,
     base_url: Optional[str] = None,
     timeout: int = 30,
     max_retries: int = 3,
@@ -190,17 +166,47 @@ IPCClient(
 )
 ```
 
+**Parameters:**
+- `api_key` (Optional[str]): API key for authentication. If not provided, some features may be limited.
+- `base_url` (Optional[str]): Custom API base URL
+- `timeout` (int): Request timeout in seconds
+- `max_retries` (int): Maximum retry attempts
+- `verify_ssl` (bool): Whether to verify SSL certificates
+- `user_agent` (Optional[str]): Custom user agent string
+- `headers` (Optional[Dict]): Additional custom headers
+
 #### Methods
 
-- `get_ip(ip: Optional[str] = None) -> Dict` - Get IP information
-- `get_ip_detailed(ip: Optional[str] = None) -> IPResponse` - Get detailed IP information
-- `get_location(ip: Optional[str] = None) -> Dict` - Get location information
-- `get_isp(ip: Optional[str] = None) -> Dict` - Get ISP information
-- `batch_lookup(ips: List[str]) -> Dict` - Look up multiple IPs
+##### `get_ip(lookup: Optional[str] = None) -> Dict`
 
-### Class Methods
+Get IP address and location information.
 
-- `from_env(api_key: Optional[str] = None) -> IPCClient` - Create client from environment variables
+**Parameters:**
+- `lookup` (Optional[str]): URL to lookup IP information for. If not provided, returns your own IP.
+
+**Returns:**
+- `Dict`: Dictionary containing IP information with keys: ip, country, etc.
+
+**Example:**
+```python
+# Get your own IP
+data = client.get_ip()
+
+# Lookup specific URL
+data = client.get_ip(lookup='google.com')
+```
+
+#### Class Methods
+
+##### `from_env(api_key: Optional[str] = None) -> IPCClient`
+
+Create client from environment variables.
+
+**Parameters:**
+- `api_key` (Optional[str]): API key override. If not provided, reads from IPC_API_KEY env var.
+
+**Returns:**
+- `IPCClient`: Configured client instance
 
 ## Development
 
@@ -211,9 +217,6 @@ cd ipc-python-sdk
 
 # Install dependencies with uv
 uv sync
-
-# Run tests
-uv run pytest
 
 # Build package
 uv build
