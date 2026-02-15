@@ -1,15 +1,14 @@
 # IPC Artsnoa Python SDK
 
-Official Python SDK for [ipc.artsnoa.com](https://ipc.artsnoa.com) API - Get your external IP address and location information.
+Official Python SDK for [ipc.artsnoa.com](https://ipc.artsnoa.com) API - Get your IP address and location information.
 
 ## Features
 
 - Simple and intuitive API
 - Type hints for better IDE support
 - Comprehensive error handling
-- Automatic retry logic with exponential backoff
-- Environment variable configuration support
-- Zero external dependencies (uses standard library only)
+- Context manager support
+- Minimal dependencies
 
 ## Installation
 
@@ -31,13 +30,13 @@ from ipc_artsnoa import IPCClient
 # Initialize client (API key is optional)
 client = IPCClient(api_key='YOUR_API_KEY')
 
-# Get your IP information
+# Get basic IP information
 data = client.get_ip()
 print(f'Your IP: {data["ip"]}, Country: {data["country"]}')
 
-# Lookup specific URL
-data = client.get_ip(lookup='google.com')
-print(f'Google IP: {data["ip"]}')
+# Get detailed IP information
+details = client.get_ip_details()
+print(f'IP: {details["ip"]}, ASN: {details["asn"]}, Currency: {details["currency"]}')
 ```
 
 ## Usage Examples
@@ -47,10 +46,10 @@ print(f'Google IP: {data["ip"]}')
 ```python
 from ipc_artsnoa import IPCClient
 
-# Create client (API key is optional)
+# Create client with API key
 client = IPCClient(api_key='YOUR_API_KEY')
 
-# Get your IP info
+# Get basic IP information
 data = client.get_ip()
 print(f"IP: {data['ip']}")
 print(f"Country: {data['country']}")
@@ -61,34 +60,35 @@ data = client.get_ip()
 print(f"Your IP: {data['ip']}")
 ```
 
-### URL Lookup
+### Detailed IP Information
 
 ```python
 from ipc_artsnoa import IPCClient
 
-# Create client
 client = IPCClient(api_key='YOUR_API_KEY')
 
-# Lookup IP for specific URL
-data = client.get_ip(lookup='google.com')
-print(f"Google IP: {data['ip']}")
-
-data = client.get_ip(lookup='github.com')
-print(f"GitHub IP: {data['ip']}")
+# Get detailed information including ASN, currency, languages
+details = client.get_ip_details()
+print(f"IP: {details['ip']}")
+print(f"User Agent: {details['userAgent']}")
+print(f"ASN: {details['asn']}")
+print(f"Country: {details['country']}")
+print(f"Currency: {details['currency']}")
+print(f"Languages: {details['languages']}")
+print(f"Timestamp: {details['timestamp']}")
 ```
 
-### Environment Variables
+### SDK Version Information
 
 ```python
-import os
 from ipc_artsnoa import IPCClient
 
-# Set API key in environment
-os.environ['IPC_API_KEY'] = 'YOUR_API_KEY'
+client = IPCClient()
 
-# Create client from environment
-client = IPCClient.from_env()
-data = client.get_ip()
+# Get available SDK versions
+versions = client.get_sdk_versions()
+print(f"Python SDK: {versions['python']}")
+print(f"JavaScript SDK: {versions['javascript']}")
 ```
 
 ### Custom Configuration
@@ -96,15 +96,24 @@ data = client.get_ip()
 ```python
 from ipc_artsnoa import IPCClient
 
-# Custom timeout and retry settings
+# Custom timeout
 client = IPCClient(
     api_key='YOUR_API_KEY',
-    timeout=60,
-    max_retries=5,
-    user_agent='MyApp/1.0'
+    timeout=15.0
 )
 
 data = client.get_ip()
+```
+
+### Using Context Manager
+
+```python
+from ipc_artsnoa import IPCClient
+
+# Automatically closes session when done
+with IPCClient(api_key='YOUR_API_KEY') as client:
+    data = client.get_ip()
+    print(f"IP: {data['ip']}")
 ```
 
 ## Error Handling
@@ -114,11 +123,10 @@ The SDK provides specific exception types for different error scenarios:
 ```python
 from ipc_artsnoa import (
     IPCClient,
-    AuthenticationError,
-    RateLimitError,
-    APIError,
-    NetworkError,
-    TimeoutError
+    IPCError,
+    IPCAPIError,
+    IPCConnectionError,
+    IPCTimeoutError
 )
 
 client = IPCClient(api_key='YOUR_API_KEY')
@@ -126,27 +134,17 @@ client = IPCClient(api_key='YOUR_API_KEY')
 try:
     data = client.get_ip()
     print(f"Your IP: {data['ip']}")
-except AuthenticationError as e:
-    print(f"Authentication failed: {e}")
-except RateLimitError as e:
-    print(f"Rate limit exceeded: {e}")
-except APIError as e:
+except IPCAPIError as e:
     print(f"API error: {e}")
-except NetworkError as e:
-    print(f"Network error: {e}")
-except TimeoutError as e:
+    if hasattr(e, 'status_code'):
+        print(f"Status code: {e.status_code}")
+except IPCConnectionError as e:
+    print(f"Connection error: {e}")
+except IPCTimeoutError as e:
     print(f"Request timeout: {e}")
+except IPCError as e:
+    print(f"IPC error: {e}")
 ```
-
-## Environment Variables
-
-The SDK supports the following environment variables:
-
-- `IPC_API_KEY` - Your API key
-- `IPC_BASE_URL` - Custom API base URL (default: `https://ipc.artsnoa.com/api`)
-- `IPC_TIMEOUT` - Request timeout in seconds (default: `30`)
-- `IPC_MAX_RETRIES` - Maximum retry attempts (default: `3`)
-- `IPC_VERIFY_SSL` - Verify SSL certificates (default: `true`)
 
 ## API Reference
 
@@ -156,57 +154,100 @@ The SDK supports the following environment variables:
 
 ```python
 IPCClient(
-    api_key: Optional[str] = None,
-    base_url: Optional[str] = None,
-    timeout: int = 30,
-    max_retries: int = 3,
-    verify_ssl: bool = True,
-    user_agent: Optional[str] = None,
-    headers: Optional[Dict[str, str]] = None
+    api_key: str | None = None,
+    timeout: float = 10.0
 )
 ```
 
 **Parameters:**
-- `api_key` (Optional[str]): API key for authentication. If not provided, some features may be limited.
-- `base_url` (Optional[str]): Custom API base URL
-- `timeout` (int): Request timeout in seconds
-- `max_retries` (int): Maximum retry attempts
-- `verify_ssl` (bool): Whether to verify SSL certificates
-- `user_agent` (Optional[str]): Custom user agent string
-- `headers` (Optional[Dict]): Additional custom headers
+- `api_key` (str | None): API key for authentication. Optional.
+- `timeout` (float): Request timeout in seconds. Defaults to 10.0
 
 #### Methods
 
-##### `get_ip(lookup: Optional[str] = None) -> Dict`
+##### `get_ip() -> dict`
 
-Get IP address and location information.
-
-**Parameters:**
-- `lookup` (Optional[str]): URL to lookup IP information for. If not provided, returns your own IP.
+Get basic IP address and location information.
 
 **Returns:**
-- `Dict`: Dictionary containing IP information with keys: ip, country, etc.
+- Dictionary containing basic IP information including:
+  - `ip`: Your IP address
+  - `country`: Country code
+
+**Raises:**
+- `IPCAPIError`: When API returns an error response
+- `IPCConnectionError`: When connection fails
+- `IPCTimeoutError`: When request times out
 
 **Example:**
 ```python
-# Get your own IP
 data = client.get_ip()
-
-# Lookup specific URL
-data = client.get_ip(lookup='google.com')
+print(f"IP: {data['ip']}, Country: {data['country']}")
 ```
 
-#### Class Methods
+##### `get_ip_details() -> dict`
 
-##### `from_env(api_key: Optional[str] = None) -> IPCClient`
-
-Create client from environment variables.
-
-**Parameters:**
-- `api_key` (Optional[str]): API key override. If not provided, reads from IPC_API_KEY env var.
+Get detailed IP address information.
 
 **Returns:**
-- `IPCClient`: Configured client instance
+- Dictionary containing detailed IP information including:
+  - `ip`: Your IP address
+  - `userAgent`: Browser user agent string
+  - `asn`: Autonomous System Number
+  - `country`: Country code
+  - `currency`: Country currency code
+  - `languages`: Supported languages
+  - `timestamp`: Request timestamp
+  - `version`: API version
+
+**Raises:**
+- `IPCAPIError`: When API returns an error response
+- `IPCConnectionError`: When connection fails
+- `IPCTimeoutError`: When request times out
+
+**Example:**
+```python
+details = client.get_ip_details()
+print(f"IP: {details['ip']}, ASN: {details['asn']}")
+```
+
+##### `get_sdk_versions() -> dict`
+
+Get available SDK versions.
+
+**Returns:**
+- Dictionary containing SDK versions for different platforms:
+  - `python`: Python SDK version
+  - `javascript`: JavaScript SDK version
+
+**Raises:**
+- `IPCAPIError`: When API returns an error response
+- `IPCConnectionError`: When connection fails
+- `IPCTimeoutError`: When request times out
+
+**Example:**
+```python
+versions = client.get_sdk_versions()
+print(f"Python SDK: {versions['python']}")
+```
+
+##### `close()`
+
+Close the underlying HTTP session.
+
+**Example:**
+```python
+client.close()
+```
+
+#### Context Manager Support
+
+The client supports context manager protocol for automatic resource cleanup:
+
+```python
+with IPCClient(api_key='YOUR_API_KEY') as client:
+    data = client.get_ip()
+```
 
 ## Development
 
@@ -224,8 +265,8 @@ uv build
 
 ## Requirements
 
-- Python 3.10+
-- No external dependencies (uses standard library only)
+- Python 3.10 or higher
+- requests >= 2.31.0
 
 ## License
 

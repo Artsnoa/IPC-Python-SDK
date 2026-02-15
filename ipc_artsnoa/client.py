@@ -13,7 +13,6 @@ class IPCClient:
     def __init__(
         self,
         api_key: str | None = None,
-        base_url: str | None = None,
         timeout: float = DEFAULT_TIMEOUT
     ):
         """
@@ -21,11 +20,10 @@ class IPCClient:
 
         Args:
             api_key: Optional API key for authentication
-            base_url: Optional base URL (default: https://ipc.artsnoa.com)
             timeout: Request timeout in seconds (default: 10.0)
         """
         self.api_key = api_key
-        self.base_url = (base_url or self.DEFAULT_BASE_URL).rstrip('/')
+        self.base_url = self.DEFAULT_BASE_URL
         self.timeout = timeout
         self._session = requests.Session()
 
