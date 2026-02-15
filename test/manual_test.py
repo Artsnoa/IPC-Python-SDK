@@ -35,19 +35,6 @@ def test_with_api_key():
     print()
 
 
-def test_custom_url():
-    """Test with custom URL"""
-    print("Test 3: Custom URL")
-    custom_url = "https://ipc.artsnoa.com"  # You can change this
-    client = IPCClient(base_url=custom_url)
-    try:
-        data = client.get_ip()
-        print(f"Success! IP: {data.get('ip')}, Country: {data.get('country')}")
-    except Exception as e:
-        print(f"Error: {e}")
-    print()
-
-
 def test_context_manager():
     """Test using context manager"""
     print("Test 4: Context manager")
@@ -76,7 +63,6 @@ if __name__ == "__main__":
     print("=== IPC SDK Manual Tests ===\n")
     test_basic_usage()
     test_with_api_key()
-    test_custom_url()
     test_context_manager()
     test_timeout()
     print("=== Tests Complete ===")

@@ -24,14 +24,6 @@ class TestIPCClientInit:
         assert client.api_key == "test_key"
         assert client._session.headers['Authorization'] == 'Bearer test_key'
 
-    def test_init_with_custom_base_url(self):
-        client = IPCClient(base_url="https://custom.example.com")
-        assert client.base_url == "https://custom.example.com"
-
-    def test_init_with_trailing_slash_in_url(self):
-        client = IPCClient(base_url="https://custom.example.com/")
-        assert client.base_url == "https://custom.example.com"
-
     def test_init_with_custom_timeout(self):
         client = IPCClient(timeout=30.0)
         assert client.timeout == 30.0
@@ -80,26 +72,6 @@ class TestIPCClientGetIP:
 
             assert result == mock_response
             assert client._session.headers['Authorization'] == 'Bearer test_api_key'
-
-    def test_get_ip_with_custom_url(self):
-        """Test get_ip with custom base URL"""
-        mock_response = {"ip": "5.6.7.8", "country": "KR"}
-        custom_url = "https://test.example.com"
-
-        with patch.object(requests.Session, 'get') as mock_get:
-            mock_resp = Mock()
-            mock_resp.json.return_value = mock_response
-            mock_resp.raise_for_status = Mock()
-            mock_get.return_value = mock_resp
-
-            client = IPCClient(base_url=custom_url)
-            result = client.get_ip()
-
-            assert result == mock_response
-            mock_get.assert_called_once_with(
-                f'{custom_url}/api/v1/ip',
-                timeout=10.0
-            )
 
     def test_get_ip_timeout_error(self):
         """Test timeout handling"""
@@ -231,31 +203,6 @@ class TestIPCClientRealAPI:
 
 class TestIPCClientIntegration:
     """Integration tests with different configurations"""
-
-    def test_multiple_clients_with_different_urls(self):
-        """Test multiple clients with different base URLs"""
-        mock_response_1 = {"ip": "1.1.1.1", "country": "US"}
-        mock_response_2 = {"ip": "2.2.2.2", "country": "KR"}
-
-        with patch.object(requests.Session, 'get') as mock_get:
-            mock_resp_1 = Mock()
-            mock_resp_1.json.return_value = mock_response_1
-            mock_resp_1.raise_for_status = Mock()
-
-            mock_resp_2 = Mock()
-            mock_resp_2.json.return_value = mock_response_2
-            mock_resp_2.raise_for_status = Mock()
-
-            mock_get.side_effect = [mock_resp_1, mock_resp_2]
-
-            client1 = IPCClient(base_url="https://api1.example.com")
-            client2 = IPCClient(base_url="https://api2.example.com")
-
-            result1 = client1.get_ip()
-            result2 = client2.get_ip()
-
-            assert result1 == mock_response_1
-            assert result2 == mock_response_2
 
     def test_client_reuse(self):
         """Test reusing same client for multiple calls"""
