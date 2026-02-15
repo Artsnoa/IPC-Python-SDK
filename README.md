@@ -276,4 +276,4 @@ MIT License
 
 - Documentation: [https://github.com/artsnoa/ipc-python-sdk](https://github.com/artsnoa/ipc-python-sdk)
 - Issues: [https://github.com/artsnoa/ipc-python-sdk/issues](https://github.com/artsnoa/ipc-python-sdk/issues)
-- Email: support@artsnoa.com
+- Email: aurora@artsnoa.com
