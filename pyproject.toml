@@ -1,7 +1,44 @@
 [project]
-name = "0045-ipc-python-sdk"
+name = "ipc-artsnoa"
 version = "0.1.0"
-description = "ipc.artsnoa.com official SDK"
+description = "Official Python SDK for ipc.artsnoa.com API - IP geolocation and information service"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "requests>=2.31.0",
+]
+authors = [
+    { name = "artsnoa", email = "support@artsnoa.com" }
+]
+keywords = ["ip", "geolocation", "ipc", "artsnoa", "api", "sdk"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet",
+]
+
+[project.urls]
+Homepage = "https://ipc.artsnoa.com"
+Documentation = "https://github.com/artsnoa/ipc-python-sdk"
+Repository = "https://github.com/artsnoa/ipc-python-sdk"
+Issues = "https://github.com/artsnoa/ipc-python-sdk/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ipc_artsnoa"]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+]
