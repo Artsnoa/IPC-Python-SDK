@@ -1,3 +1,5 @@
 # ignore protect
 .*
 *.
+
+/test/manual.py
