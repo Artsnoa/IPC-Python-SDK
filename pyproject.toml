@@ -1,6 +1,6 @@
 [project]
 name = "ipc-artsnoa"
-version = "1.0.0"
+version = "1.0.1"
 description = "Official Python SDK for ipc.artsnoa.com API - IP geolocation and information service"
 readme = "README.md"
 requires-python = ">=3.10"
