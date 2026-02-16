@@ -25,7 +25,6 @@ class IPCClient:
             timeout: Request timeout in seconds (default: 10.0)
         """
         self.api_key = api_key
-        self.base_url = self.DEFAULT_BASE_URL
         self.timeout = timeout
         self._session = requests.Session()
 
@@ -45,7 +44,7 @@ class IPCClient:
             IPCTimeoutError: When request times out
         """
         try:
-            return modules.get_ip(self._session, self.base_url, self.timeout)
+            return modules.get_ip(self._session, self.DEFAULT_BASE_URL, self.timeout)
         except (IPCConnectionError, IPCTimeoutError, IPCAPIError):
             return modules.get_ip(self._session, self.BACKUP_BASE_URL, self.timeout)
 
@@ -62,7 +61,7 @@ class IPCClient:
             IPCTimeoutError: When request times out
         """
         try:
-            return modules.get_ip_details(self._session, self.base_url, self.timeout)
+            return modules.get_ip_details(self._session, self.DEFAULT_BASE_URL, self.timeout)
         except (IPCConnectionError, IPCTimeoutError, IPCAPIError):
             return modules.get_ip_details(self._session, self.BACKUP_BASE_URL, self.timeout)
 
@@ -79,7 +78,7 @@ class IPCClient:
             IPCTimeoutError: When request times out
         """
         try:
-            return modules.get_sdk_versions(self._session, self.base_url, self.timeout)
+            return modules.get_sdk_versions(self._session, self.DEFAULT_BASE_URL, self.timeout)
         except (IPCConnectionError, IPCTimeoutError, IPCAPIError):
             return modules.get_sdk_versions(self._session, self.BACKUP_BASE_URL, self.timeout)
 
