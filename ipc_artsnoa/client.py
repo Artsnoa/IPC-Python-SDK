@@ -23,7 +23,18 @@ class IPCClient:
         Args:
             api_key: Optional API key for authentication
             timeout: Request timeout in seconds (default: 10.0)
+
+        Raises:
+            ValueError: If api_key is empty string or timeout is invalid
         """
+        # Validate api_key
+        if api_key is not None and not api_key.strip():
+            raise ValueError('api_key cannot be empty string')
+
+        # Validate timeout
+        if not isinstance(timeout, (int, float)) or timeout <= 0:
+            raise ValueError('timeout must be a positive number')
+
         self.api_key = api_key
         self.timeout = timeout
         self._session = requests.Session()

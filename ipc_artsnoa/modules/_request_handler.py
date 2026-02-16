@@ -29,13 +29,19 @@ def make_request(
         IPCTimeoutError: When request times out
     """
     try:
-        response = session.get(url, timeout=timeout)
+        response = session.get(url, timeout=timeout, verify=True)
         response.raise_for_status()
+
+        # Validate Content-Type
+        content_type = response.headers.get('Content-Type', '')
+        if 'application/json' not in content_type:
+            raise IPCAPIError(f'Invalid response format: expected JSON but got {content_type}')
+
         return response.json()
     except Timeout as e:
-        raise IPCTimeoutError(f'Request timed out after {timeout}s') from e
+        raise IPCTimeoutError('Request timed out') from e
     except ConnectionError as e:
-        raise IPCConnectionError(f'Failed to connect to {url}') from e
+        raise IPCConnectionError('Failed to connect to API server') from e
     except HTTPError as e:
         status_code = e.response.status_code if e.response else None
         error_msg = f'API request failed with status {status_code}'
@@ -47,4 +53,4 @@ def make_request(
             pass
         raise IPCAPIError(error_msg, status_code) from e
     except RequestException as e:
-        raise IPCConnectionError(f'Request failed: {str(e)}') from e
+        raise IPCConnectionError('Request failed') from e
